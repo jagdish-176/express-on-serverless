@@ -12,11 +12,19 @@ module.exports = app => {
   server.on('close', () => (isListening = false))
   server.on('error', console.error)
 
+  function getSocketPath() {
+    if (/^win/.test(process.platform)) {
+      return `//./pipe/express-${new Date().getTime()}`
+    }
+    else {
+      return `/tmp/express-${new Date().getTime()}.sock`
+    }
+  }
   function onRequest (event, context) {
     if (isListening) {
       requestToServer(event, context)
     } else {
-      socketPath = `/tmp/express-${new Date().getTime()}.sock`
+      socketPath = getSocketPath();
       server.listen(socketPath).on('listening', () => {
         requestToServer(event, context)
       })
